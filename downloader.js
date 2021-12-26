@@ -2,6 +2,7 @@ import { JSDOM } from "jsdom";
 import fetch from "node-fetch";
 import fs from "fs";
 import os from "os";
+import readlineSync from "readline-sync";
 
 const downloadImage = (url, dirpath) => {
   const imageName = url.split("/")[7];
@@ -75,7 +76,13 @@ const parseHouseInfo = (document) => {
   return houseInfo;
 };
 
-const homeUrl = process.argv[2];
+let homeUrl = process.argv[2];
+
+if (!homeUrl) {
+  homeUrl = readlineSync.question("What URL? ");
+}
+
+console.log("Home URL: " + homeUrl);
 
 const shortName = getShortName(homeUrl);
 const baseDirectory = `${os.homedir()}/Pictures/houses`;
