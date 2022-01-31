@@ -67,6 +67,15 @@ const parseHouseInfo = (document) => {
     "[data-rf-test-id='listingRemarks'] p span"
   ).innerHTML;
 
+  // Get Neighborhood
+  houseInfo["neighborhood"] = document.querySelector(
+    "a.MarketInsightsRegionCard--cardHeader-displayName"
+  ).innerHTML;
+
+  // Style
+  houseInfo["style"] =
+    document.querySelectorAll("div.table-row")[7].childNodes[1].innerHTML;
+
   houseInfo["misc"] = [];
   document
     .querySelectorAll("div.amenities-container ul li")
@@ -142,6 +151,16 @@ const addInfoToNotion = async (info, imageUrls) => {
           id: "IK%40%3B",
           type: "number",
           number: parseInt(info.lot.replace(",", "")),
+        },
+        Style: {
+          id: "po%7D%5E",
+          type: "rich_text",
+          rich_text: [{ type: "text", text: { content: info.style } }],
+        },
+        Neighborhood: {
+          id: "%7BbNp",
+          type: "rich_text",
+          rich_text: [{ type: "text", text: { content: info.neighborhood } }],
         },
       },
       children: [
