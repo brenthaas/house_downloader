@@ -38,15 +38,19 @@ const parseHouseInfo = (document) => {
     document.querySelector("[data-rf-test-id='abp-cityStateZip']").innerHTML
   ).replaceAll(/<!-- -->/g, "");
 
-  // Get Price and Beds info
-  document.querySelectorAll("[data-rf-test-id='abp-beds']").forEach((elem) => {
-    const children = elem.childNodes;
-    let title = children[1].innerHTML.toLowerCase();
-    if (title !== "price" && title !== "beds") {
-      title = "price";
-    }
-    houseInfo[title] = children[0].innerHTML;
-  });
+  // Generate a map URL
+  houseInfo["mapUrl"] = "https://www.google.com/maps/place/" +
+    houseInfo["address"].replaceAll(/,? /g, "+");
+
+  // Get Price
+  houseInfo["price"] = document.querySelectorAll(
+    "[data-rf-test-id='abp-price']"
+  )[0].childNodes[0].innerHTML;
+
+  // Get Beds
+  houseInfo["beds"] = document.querySelectorAll(
+    "[data-rf-test-id='abp-beds']"
+  )[0].childNodes[0].innerHTML;
 
   // Get Baths
   houseInfo["baths"] = document.querySelectorAll(
@@ -76,11 +80,19 @@ const parseHouseInfo = (document) => {
   houseInfo["style"] =
     document.querySelectorAll("div.table-row")[7].childNodes[1].innerHTML;
 
-  houseInfo["misc"] = [];
+  houseInfo["misc"] = {};
   document
-    .querySelectorAll("div.amenities-container ul li")
+    .querySelectorAll("div.amenities-container ul")
     .forEach(
-      (node) => (houseInfo["misc"] = [node.textContent, ...houseInfo["misc"]])
+      (node) => {
+        let header = node.querySelector("div.propertyDetailsHeader").textContent
+        let items = []
+        node
+          .querySelectorAll("li")
+          .forEach((node) => (items = [...items, node.textContent]));
+
+        houseInfo["misc"][header] = items
+      }
     );
 
   return houseInfo;
@@ -200,7 +212,28 @@ const addInfoToNotion = async (info, imageUrls) => {
               {
                 type: "text",
                 text: {
-                  content: "details",
+                  content: "Map",
+                },
+              },
+            ],
+          },
+        },
+        {
+          object: "block",
+          type: "embed",
+          embed: {
+            url: info.mapUrl,
+          },
+        },
+        {
+          object: "block",
+          type: "heading_2",
+          heading_2: {
+            text: [
+              {
+                type: "text",
+                text: {
+                  content: "Details",
                 },
               },
             ],
@@ -271,8 +304,8 @@ if (process.env.NOTION_DATABASE_ID === undefined) {
   process.exit(1);
 }
 
-const notion = new Client({ auth: process.env.NOTION_KEY });
-const databaseId = process.env.NOTION_DATABASE_ID;
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const databaseId = process.env.NOTION_HOUSE_DATABASE_ID;
 
 console.log("House Info: ", houseInfo);
 addInfoToNotion(houseInfo, houseImageUrls);
