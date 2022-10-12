@@ -137,7 +137,7 @@ const addInfoToNotion = async (info, imageUrls) => {
         "For Sale Price": {
           id: "%5CAmm",
           type: "number",
-          number: parseInt(info.price.replace("$", "").replaceAll(",", "")),
+          number: parseInt(info.price.replaceAll(/[$, ]/ig, "")),
         },
         Location: {
           id: "AeoI",
